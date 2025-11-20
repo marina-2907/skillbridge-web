@@ -150,7 +150,7 @@ npm run preview
 npm run lint     
 
 
- Equipe
+- Equipe
 
 * Nome	RM / Turma	GitHub	LinkedIn
 
@@ -158,7 +158,7 @@ Bruno Vinicius Barbosa	566366 / 1TDSPY	https://github.com/brunovinicius02	https:
 João Pedro Bitencourt Goldoni	564339 / 1TDSPX	https://github.com/JoaoPedroBitencourtGoldoni	https://www.linkedin.com/in/joaopedrogoldoni
 Marina Tamagnini Magalhães	561786 / 1TDSPX	https://github.com/marina-2907/marina	https://www.linkedin.com/in/marina-t-36b14328b
 
- Contexto Acadêmico
+- Contexto Acadêmico
 Este projeto faz parte do desenvolvimento integrado das disciplinas de:
 
 Building Relational Database
@@ -169,7 +169,7 @@ Outras disciplinas correlatas no semestre (UI/UX, Engenharia de Software, etc.)
 
 O foco do repositório é a camada de front-end, mas o sistema foi pensado para integração com uma API e banco de dados Oracle, modelados à parte.
 
- Observações
+- Observações
 O sistema é um protótipo acadêmico, sem fins comerciais.
 
 Alguns fluxos (login, envio de formulário, recomendações de IA) são simulados no front-end.
