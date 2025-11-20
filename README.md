@@ -182,5 +182,18 @@ Autenticação JWT
 
 Recomendações dinâmicas a partir de dados reais
 
+Links Importantes
+
+ Repositório no GitHub
+https://github.com/marina-2907/skillbridge-web
+
+ Vídeo de Apresentação (YouTube)
+https://youtu.be/zNGS5CmAJ2w
+
+ Deploy no Vercel
+https://skillbridge-web-indol.vercel.app
+
+
+
 💙 Agradecimentos
 Agradecemos à FIAP e aos professores envolvidos pela orientação e pela oportunidade de desenvolver um projeto completo, unindo design, código e modelagem de dados.
