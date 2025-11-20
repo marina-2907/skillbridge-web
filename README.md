@@ -6,7 +6,7 @@ Este projeto foi desenvolvido como parte das atividades acadêmicas da **FIAP**,
 
 ---
 
-## 🎯 Objetivo do Projeto
+##  Objetivo do Projeto
 
 A SkillBridge nasce para resolver um problema comum:  
 > *“Existe conteúdo demais, pouca direção e nenhuma trilha clara de aprendizado.”*
@@ -20,7 +20,7 @@ A proposta é oferecer uma experiência onde o usuário:
 
 ---
 
-## 🖥️ Principais Funcionalidades (Front-End)
+##  Principais Funcionalidades (Front-End)
 
 - **Navbar responsiva** com:
   - Logo SkillBridge
@@ -66,19 +66,19 @@ A proposta é oferecer uma experiência onde o usuário:
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+##  Tecnologias Utilizadas
 
-- ⚛ **React** (com **TypeScript**)
-- ⚡ **Vite**
-- 🎨 **TailwindCSS**
-- 🧭 **React Router DOM**
-- 🔣 **Lucide React** (ícones)
-- 🧹 ESLint (config padrão Vite/TS)  
-- 🌐 HTML5, CSS3, JavaScript (ES6+)
+-  **React** (com **TypeScript**)
+-  **Vite**
+-  **TailwindCSS**
+-  **React Router DOM**
+-  **Lucide React** (ícones)
+-  ESLint (config padrão Vite/TS)  
+-  HTML5, CSS3, JavaScript (ES6+)
 
 ---
 
-## 📁 Estrutura Geral do Projeto
+##  Estrutura Geral do Projeto
 
 ```bash
 skillbridge-web/
@@ -110,7 +110,7 @@ skillbridge-web/
 └─ vite.config.ts
 
 
-🚀 Como Rodar o Projeto Localmente
+- Como Rodar o Projeto Localmente
 
 1️⃣ Clonar o repositório
 
@@ -139,7 +139,7 @@ Copiar código
 http://localhost:5173
 (porta padrão do Vite – pode variar)
 
-🧪 Scripts Disponíveis
+ Scripts Disponíveis
 No package.json, você encontra alguns scripts úteis:
 
 bash
@@ -150,7 +150,7 @@ npm run preview
 npm run lint     
 
 
-👥 Equipe
+ Equipe
 
 * Nome	RM / Turma	GitHub	LinkedIn
 
@@ -158,7 +158,7 @@ Bruno Vinicius Barbosa	566366 / 1TDSPY	https://github.com/brunovinicius02	https:
 João Pedro Bitencourt Goldoni	564339 / 1TDSPX	https://github.com/JoaoPedroBitencourtGoldoni	https://www.linkedin.com/in/joaopedrogoldoni
 Marina Tamagnini Magalhães	561786 / 1TDSPX	https://github.com/marina-2907/marina	https://www.linkedin.com/in/marina-t-36b14328b
 
-📚 Contexto Acadêmico
+ Contexto Acadêmico
 Este projeto faz parte do desenvolvimento integrado das disciplinas de:
 
 Building Relational Database
@@ -169,7 +169,7 @@ Outras disciplinas correlatas no semestre (UI/UX, Engenharia de Software, etc.)
 
 O foco do repositório é a camada de front-end, mas o sistema foi pensado para integração com uma API e banco de dados Oracle, modelados à parte.
 
-📌 Observações
+ Observações
 O sistema é um protótipo acadêmico, sem fins comerciais.
 
 Alguns fluxos (login, envio de formulário, recomendações de IA) são simulados no front-end.
