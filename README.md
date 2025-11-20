@@ -154,9 +154,9 @@ npm run lint
 
 * Nome	RM / Turma	GitHub	LinkedIn
 
-Bruno Vinicius Barbosa	566366 / 1TDSPY	https://github.com/brunovinicius02	https://www.linkedin.com/in/brunovbarbosaa
-João Pedro Bitencourt Goldoni	564339 / 1TDSPX	https://github.com/JoaoPedroBitencourtGoldoni	https://www.linkedin.com/in/joaopedrogoldoni
-Marina Tamagnini Magalhães	561786 / 1TDSPX	https://github.com/marina-2907/marina	https://www.linkedin.com/in/marina-t-36b14328b
+Bruno Vinicius Barbosa	566366 / 1TDSPY	 ---- https://github.com/brunovinicius02	https://www.linkedin.com/in/brunovbarbosaa
+João Pedro Bitencourt Goldoni	564339 / 1TDSPX	----- https://github.com/JoaoPedroBitencourtGoldoni	https://www.linkedin.com/in/joaopedrogoldoni
+Marina Tamagnini Magalhães	561786 / 1TDSPX ----	https://github.com/marina-2907/marina	https://www.linkedin.com/in/marina-t-36b14328b
 
 - Contexto Acadêmico
 Este projeto faz parte do desenvolvimento integrado das disciplinas de:
