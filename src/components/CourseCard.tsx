@@ -1,41 +1,82 @@
 // src/components/CourseCard.tsx
 import { useState } from "react";
-import type { Curso } from "../types";
-import { useTrilha } from "../hooks/useTrilha";
+import { useAuth } from "../contexts/AuthContext";
+import { inscricaoService } from "../services/inscricao.service";
 import { useFavoritos } from "../hooks/useFavoritos";
+import type { CursoAPI } from "../types/api.types";
+import { mapCursoAPIToCurso } from "../types/api.types";
 
 type Props = {
-  c: Curso;
-  // controle opcional vindo do pai
-  jaNaTrilhaExternamente?: boolean;
-  onAdicionarTrilhaClick?: (curso: Curso) => void;
+  c: CursoAPI;
+  jaNaTrilha?: boolean;
+  onAdicionadoATrilha?: () => void; // callback para atualizar lista
 };
 
-export default function CourseCard({
-  c,
-  jaNaTrilhaExternamente,
-  onAdicionarTrilhaClick,
-}: Props) {
-  const { adicionar } = useTrilha();
+export default function CourseCard({ c, jaNaTrilha = false, onAdicionadoATrilha }: Props) {
+  const { usuario, isLoggedIn } = useAuth();
   const { toggleFavorito, isFavorito } = useFavoritos();
+  const [adicionando, setAdicionando] = useState(false);
+  const [adicionado, setAdicionado] = useState(jaNaTrilha);
 
   const favorito = isFavorito(c.id);
 
-  // estado local só como fallback, se o pai não controlar
-  const [jaNaTrilhaLocal, setJaNaTrilhaLocal] = useState(false);
+  const handleAdicionarTrilha = async () => {
+    if (adicionado || !isLoggedIn || !usuario) {
+      if (!isLoggedIn) {
+        alert("Faça login para adicionar cursos à sua trilha!");
+      }
+      return;
+    }
 
-  const jaNaTrilha = jaNaTrilhaExternamente ?? jaNaTrilhaLocal;
+    try {
+      setAdicionando(true);
 
-  const handleAdicionarTrilha = () => {
-    if (jaNaTrilha) return;
+      // Criar inscrição no backend
+      await inscricaoService.criar({
+        usuarioId: usuario.id,
+        cursoId: c.id,
+      });
 
-    if (onAdicionarTrilhaClick) {
-      onAdicionarTrilhaClick(c); // pai cuida
-    } else {
-      adicionar(c); // fallback: add direto aqui
-      setJaNaTrilhaLocal(true);
+      setAdicionado(true);
+
+      // Notificar o pai que o curso foi adicionado
+      if (onAdicionadoATrilha) {
+        onAdicionadoATrilha();
+      }
+    } catch (error: any) {
+      console.error("Erro ao adicionar curso à trilha:", error);
+
+      let mensagemErro = "Erro ao adicionar curso. ";
+
+      if (error.message) {
+        mensagemErro += error.message;
+      } else if (error.toString().includes("409")) {
+        mensagemErro += "Você já está inscrito neste curso.";
+      } else if (error.toString().includes("500")) {
+        mensagemErro += "Erro no servidor. Tente novamente.";
+      } else {
+        mensagemErro += "Tente novamente mais tarde.";
+      }
+
+      alert(mensagemErro);
+    } finally {
+      setAdicionando(false);
     }
   };
+
+  // opcional: deixar o nível mais amigável na UI
+  const nivelLabel = (() => {
+    switch (c.nivel) {
+      case "BASICO":
+        return "iniciante";
+      case "INTERMEDIARIO":
+        return "intermediário";
+      case "AVANCADO":
+        return "avançado";
+      default:
+        return c.nivel;
+    }
+  })();
 
   return (
     <div
@@ -51,7 +92,7 @@ export default function CourseCard({
       {/* Coração de favoritos */}
       <button
         type="button"
-        onClick={() => toggleFavorito(c)}
+        onClick={() => toggleFavorito(mapCursoAPIToCurso(c))}
         className="
           absolute right-3 top-3
           inline-flex h-8 w-8 items-center justify-center
@@ -67,36 +108,24 @@ export default function CourseCard({
       {/* Conteúdo principal */}
       <div>
         <h3 className="pr-8 text-base md:text-lg font-semibold text-slate-900 line-clamp-2">
-          {c.titulo}
+          {c.nome}
         </h3>
 
         <p className="mt-1 text-xs md:text-sm text-slate-500">
-          {c.provedor} • {c.cargaHoraria}h • ⭐ {c.rating}
+          {c.area} • {c.cargaHoraria}h
         </p>
 
         <div className="mt-3 flex flex-wrap gap-1.5">
           <span className="inline-flex items-center rounded-full bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 border border-slate-100">
-            Nível: {c.nivel}
+            Nível: {nivelLabel}
           </span>
-          {c.tags.slice(0, 2).map((t) => (
-            <span
-              key={t}
-              className="inline-flex items-center rounded-full bg-sky-50 px-2 py-0.5 text-[11px] text-sky-700 border border-sky-100"
-            >
-              #{t}
-            </span>
-          ))}
         </div>
 
-        <p className="mt-3 text-xs md:text-sm text-slate-600 line-clamp-3">
-          Este curso ajuda você a evoluir em{" "}
-          <span className="font-semibold">
-            {c.tags && c.tags.length > 0
-              ? c.tags.slice(0, 2).join(", ")
-              : "competências essenciais"}
-          </span>{" "}
-          dentro da sua trilha de carreira.
-        </p>
+        {c.descricao && (
+          <p className="mt-3 text-xs md:text-sm text-slate-600 line-clamp-3">
+            {c.descricao}
+          </p>
+        )}
       </div>
 
       {/* Ações */}
@@ -104,18 +133,28 @@ export default function CourseCard({
         <button
           type="button"
           onClick={handleAdicionarTrilha}
-          disabled={jaNaTrilha}
+          disabled={adicionado || adicionando || !isLoggedIn}
           className={`
             w-full rounded-xl px-3 py-2 text-xs md:text-sm font-semibold
             text-white shadow-sm transition
             ${
-              jaNaTrilha
+              adicionado
                 ? "bg-emerald-600/90 cursor-default"
+                : adicionando
+                ? "bg-slate-400 cursor-wait"
+                : !isLoggedIn
+                ? "bg-slate-300 cursor-not-allowed"
                 : "bg-sky-600 hover:bg-sky-700"
             }
           `}
         >
-          {jaNaTrilha ? "Já na sua trilha ✅" : "Adicionar à trilha"}
+          {adicionando
+            ? "Adicionando..."
+            : adicionado
+            ? "Já na sua trilha ✅"
+            : !isLoggedIn
+            ? "Faça login para adicionar"
+            : "Adicionar à trilha"}
         </button>
       </div>
     </div>

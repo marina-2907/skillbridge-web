@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 const PRIMARY = "#0EA5E9";
 const PRIMARY_DARK = "#0369A1";
@@ -45,8 +46,54 @@ const IconLogin = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+const IconLogout = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" width="18" height="18" {...props}>
+    <path
+      d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M16 17l5-5-5-5M21 12H9"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const IconUser = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" width="18" height="18" {...props}>
+    <circle
+      cx="12"
+      cy="8"
+      r="4"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      fill="none"
+    />
+    <path
+      d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const { isLoggedIn, usuario, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+    setOpen(false);
+  };
 
   const linkBase =
     "relative px-3 py-2 text-xs md:text-sm font-medium rounded-xl transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-100";
@@ -114,7 +161,7 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* NAV DESKTOP — PERFIL NO FINAL */}
+        {/* NAV DESKTOP */}
         <nav className="hidden md:flex items-center gap-1 rounded-full bg-slate-50 px-3 py-1.5 border border-slate-200">
           <NavItem to="/">Início</NavItem>
           <NavItem to="/catalogo">Catálogo</NavItem>
@@ -123,21 +170,43 @@ export default function Navbar() {
           <NavItem to="/faq">FAQ</NavItem>
           <NavItem to="/contato">Contato</NavItem>
           <NavItem to="/integrantes">Integrantes</NavItem>
-          {/* PERFIL AGORA É O ÚLTIMO */}
-          <NavItem to="/perfil">Perfil</NavItem>
+          {isLoggedIn && <NavItem to="/perfil">Perfil</NavItem>}
         </nav>
 
-        {/* LOGIN DESKTOP */}
-        <Link
-          to="/login"
-          className="hidden md:inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-semibold rounded-xl text-white shadow-md hover:shadow-lg hover:-translate-y-px active:translate-y-0 transition"
-          style={{
-            background: `linear-gradient(120deg, ${PRIMARY}, ${PRIMARY_DARK})`,
-          }}
-        >
-          <IconLogin />
-          <span>Entrar</span>
-        </Link>
+        {/* ÁREA DE AUTENTICAÇÃO DESKTOP */}
+        <div className="hidden md:flex items-center gap-2">
+          {isLoggedIn ? (
+            <>
+              {/* Nome do usuário */}
+              <div className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700">
+                <IconUser className="text-blue-600" />
+                <span className="font-medium max-w-[120px] truncate">
+                  {usuario?.nome?.split(' ')[0] || 'Usuário'}
+                </span>
+              </div>
+              
+              {/* Botão de logout */}
+              <button
+                onClick={handleLogout}
+                className="inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-semibold rounded-xl text-white shadow-md hover:shadow-lg hover:-translate-y-px active:translate-y-0 transition bg-red-500 hover:bg-red-600"
+              >
+                <IconLogout />
+                <span>Sair</span>
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-semibold rounded-xl text-white shadow-md hover:shadow-lg hover:-translate-y-px active:translate-y-0 transition"
+              style={{
+                background: `linear-gradient(120deg, ${PRIMARY}, ${PRIMARY_DARK})`,
+              }}
+            >
+              <IconLogin />
+              <span>Entrar</span>
+            </Link>
+          )}
+        </div>
 
         {/* BOTÃO MOBILE */}
         <button
@@ -148,7 +217,7 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* MENU MOBILE — PERFIL NO FINAL */}
+      {/* MENU MOBILE */}
       {open && (
         <div className="fixed inset-0 z-50 bg-white flex flex-col md:hidden">
           
@@ -161,7 +230,7 @@ export default function Navbar() {
                   SkillBridge
                 </span>
                 <span className="text-[10px] text-slate-400">
-                  Explore novas habilidades
+                  {isLoggedIn ? `Olá, ${usuario?.nome?.split(' ')[0]}!` : 'Explore novas habilidades'}
                 </span>
               </div>
             </div>
@@ -184,23 +253,34 @@ export default function Navbar() {
             <Link to="/contato" onClick={() => setOpen(false)} className="px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100 font-medium">Contato</Link>
             <Link to="/integrantes" onClick={() => setOpen(false)} className="px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100 font-medium">Integrantes</Link>
 
-            {/* PERFIL AGORA É O ÚLTIMO */}
-            <Link to="/perfil" onClick={() => setOpen(false)} className="px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100 font-medium">Perfil</Link>
+            {isLoggedIn && (
+              <Link to="/perfil" onClick={() => setOpen(false)} className="px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100 font-medium">Perfil</Link>
+            )}
           </nav>
 
-          {/* LOGIN MOBILE */}
+          {/* AUTENTICAÇÃO MOBILE */}
           <div className="mt-auto px-4 pb-6 pt-2 border-t border-slate-200">
-            <Link
-              to="/login"
-              onClick={() => setOpen(false)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm text-white shadow-md active:scale-[0.99] transition"
-              style={{
-                background: `linear-gradient(120deg, ${PRIMARY}, ${PRIMARY_DARK})`,
-              }}
-            >
-              <IconLogin />
-              <span>Entrar na plataforma</span>
-            </Link>
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm text-white shadow-md active:scale-[0.99] transition bg-red-500"
+              >
+                <IconLogout />
+                <span>Sair da conta</span>
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setOpen(false)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm text-white shadow-md active:scale-[0.99] transition"
+                style={{
+                  background: `linear-gradient(120deg, ${PRIMARY}, ${PRIMARY_DARK})`,
+                }}
+              >
+                <IconLogin />
+                <span>Entrar na plataforma</span>
+              </Link>
+            )}
           </div>
         </div>
       )}

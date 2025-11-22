@@ -33,9 +33,9 @@ export default function FilterBar({
           className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm text-slate-800 shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/60 focus:border-sky-500 transition"
         >
           <option value="">Todos níveis</option>
-          <option value="iniciante">Iniciante</option>
-          <option value="intermediario">Intermediário</option>
-          <option value="avancado">Avançado</option>
+          <option value="BASICO">Iniciante</option>
+          <option value="INTERMEDIARIO">Intermediário</option>
+          <option value="AVANCADO">Avançado</option>
         </select>
       </div>
     </div>

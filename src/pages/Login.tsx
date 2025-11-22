@@ -1,309 +1,294 @@
 // src/pages/Login.tsx
-import { useState, type FormEvent, type ChangeEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { usuarioService } from '../services/usuario.service';
+import type { LoginDTO, UsuarioCreateDTO } from '../types/api.types';
 
-type PerfilForm = {
-  nome: string;
-  email: string;
-  senha: string;
-  fotoUrl: string; // agora guarda o base64 da imagem
-  nivelAtual: "iniciante" | "intermediario" | "avancado" | "";
-  interesses: string[];
-  disponibilidadeSemanal: string; // guardo como string no form, converto depois
-};
-
-const OPCOES_INTERESSES = [
-  "frontend",
-  "backend",
-  "dados",
-  "ia",
-  "ux/ui",
-  "cloud",
-  "devops",
-];
-
-export function Login() {
+export default function Login() {
   const navigate = useNavigate();
+  const { login: loginAuth } = useAuth();
+  const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const [form, setForm] = useState<PerfilForm>({
-    nome: "",
-    email: "",
-    senha: "",
-    fotoUrl: "",
-    nivelAtual: "",
-    interesses: [],
-    disponibilidadeSemanal: "",
+  // Estado para login
+  const [loginData, setLoginData] = useState<LoginDTO>({
+    email: '',
+    senha: '',
   });
 
-  const toggleInteresse = (interesse: string) => {
-    setForm((prev) => {
-      const jaTem = prev.interesses.includes(interesse);
-      return {
-        ...prev,
-        interesses: jaTem
-          ? prev.interesses.filter((i) => i !== interesse)
-          : [...prev.interesses, interesse],
-      };
-    });
-  };
+  // Estado para cadastro
+  const [cadastroData, setCadastroData] = useState<UsuarioCreateDTO>({
+    nome: '',
+    email: '',
+    senha: '',
+  });
 
-  // ⬇️ novo: trata upload de imagem local e salva em base64 no estado
-  const handleFotoChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setForm((prev) => ({
-        ...prev,
-        fotoUrl: (reader.result as string) || "",
-      }));
-    };
-
-    reader.readAsDataURL(file); // converte para base64
-  };
-
-  const handleSubmit = (e: FormEvent) => {
+  /**
+   * Fazer login
+   */
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
 
-    // Monta objeto de usuário que será usado no Perfil / Home
-    const usuario = {
-      id: 1,
-      nome: form.nome || "Aluno SkillBridge",
-      email: form.email,
-      fotoUrl: form.fotoUrl || "", // aqui já é base64
-      nivelAtual: form.nivelAtual || "iniciante",
-      interesses: form.interesses,
-      competencias: [], // pode preencher depois com algo do backend
-      disponibilidadeSemanal: Number(form.disponibilidadeSemanal) || 4,
-    };
+    try {
+      const usuario = await usuarioService.login(loginData);
+      
+      // Usar o contexto de autenticação
+      loginAuth(usuario);
+      
+      // Redirecionar para home
+      navigate('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao fazer login');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Salva no localStorage (mock de "login")
-    localStorage.setItem("skillbridge_user", JSON.stringify(usuario));
+  /**
+   * Criar conta
+   */
+  const handleCadastro = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
-    // redireciona para Home
-    navigate("/");
+    try {
+      await usuarioService.criar(cadastroData);
+      
+      // Fazer login automático após cadastro
+      const usuario = await usuarioService.login({
+        email: cadastroData.email,
+        senha: cadastroData.senha,
+      });
+      
+      // Usar o contexto de autenticação
+      loginAuth(usuario);
+      
+      // Redirecionar para perfil (configuração inicial)
+      navigate('/perfil');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao criar conta');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-160px)] items-center justify-center px-4 py-10">
-      <div className="w-full max-w-3xl rounded-3xl bg-white/95 border border-slate-200 shadow-xl overflow-hidden grid md:grid-cols-[1.1fr,0.9fr]">
-        {/* LADO ESQUERDO – FORMULÁRIO */}
-        <div className="px-6 py-7 md:px-8 md:py-9">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-sky-600">
-            Acessar SkillBridge
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl">
+        {/* Logo e Título */}
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-blue-600">SkillBridge</h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Seu próximo passo, guiado por IA
           </p>
-
-          <h2 className="mt-3 text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
-            Monte seu perfil para recomendações inteligentes
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+            {isLogin ? 'Entre na sua conta' : 'Crie sua conta'}
           </h2>
+        </div>
 
-          <p className="mt-2 text-xs md:text-sm text-slate-600">
-            Preencha seus dados e interesses. Usaremos essas informações para
-            montar sua Home e Perfil com saudações personalizadas e trilhas
-            sob medida.
-          </p>
+        {/* Abas Login/Cadastro */}
+        <div className="flex border-b border-gray-200">
+          <button
+            onClick={() => setIsLogin(true)}
+            className={`flex-1 py-3 text-center font-medium transition-colors ${
+              isLogin
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Login
+          </button>
+          <button
+            onClick={() => setIsLogin(false)}
+            className={`flex-1 py-3 text-center font-medium transition-colors ${
+              !isLogin
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Cadastro
+          </button>
+        </div>
 
-          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-            {/* Nome e e-mail */}
-            <div className="grid gap-3 md:grid-cols-2">
+        {/* Mensagem de erro */}
+        {error && (
+          <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
+
+        {isLogin ? (
+          // ==================== FORMULÁRIO DE LOGIN ====================
+          <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+            <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Nome completo
+                <label htmlFor="email-login" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
                 </label>
                 <input
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/70 focus:border-sky-500"
-                  placeholder="Como quer ser chamada na plataforma"
-                  value={form.nome}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, nome: e.target.value }))
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  E-mail
-                </label>
-                <input
+                  id="email-login"
+                  name="email"
                   type="email"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/70 focus:border-sky-500"
-                  placeholder="voce@exemplo.com"
-                  value={form.email}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, email: e.target.value }))
-                  }
                   required
+                  className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="seu@email.com"
+                  value={loginData.email}
+                  onChange={(e) =>
+                    setLoginData({ ...loginData, email: e.target.value })
+                  }
                 />
               </div>
-            </div>
 
-            {/* Senha (mock) e foto */}
-            <div className="grid gap-3 md:grid-cols-2">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label htmlFor="senha-login" className="block text-sm font-medium text-gray-700 mb-1">
                   Senha
                 </label>
                 <input
+                  id="senha-login"
+                  name="senha"
                   type="password"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/70 focus:border-sky-500"
-                  placeholder="Apenas para simulação 😉"
-                  value={form.senha}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, senha: e.target.value }))
-                  }
                   required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Foto de perfil (upload opcional)
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-1.5 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-sky-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-sky-700"
-                  onChange={handleFotoChange}
-                />
-                {form.fotoUrl && (
-                  <div className="mt-3 flex items-center gap-2">
-                    <div className="h-10 w-10 rounded-full overflow-hidden border border-slate-200">
-                      <img
-                        src={form.fotoUrl}
-                        alt="Prévia da foto"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <span className="text-[11px] text-slate-500">
-                      Prévia da sua foto de perfil
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Nível e disponibilidade */}
-            <div className="grid gap-3 md:grid-cols-2">
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Nível atual na área
-                </label>
-                <select
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/70 focus:border-sky-500"
-                  value={form.nivelAtual}
+                  className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="••••••••"
+                  value={loginData.senha}
                   onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      nivelAtual: e.target
-                        .value as PerfilForm["nivelAtual"],
-                    }))
+                    setLoginData({ ...loginData, senha: e.target.value })
                   }
-                  required
-                >
-                  <option value="">Selecione...</option>
-                  <option value="iniciante">Iniciante</option>
-                  <option value="intermediario">Intermediário</option>
-                  <option value="avancado">Avançado</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Disponibilidade semanal (horas)
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={40}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/70 focus:border-sky-500"
-                  placeholder="Ex: 6"
-                  value={form.disponibilidadeSemanal}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      disponibilidadeSemanal: e.target.value,
-                    }))
-                  }
-                  required
                 />
               </div>
             </div>
 
-            {/* Interesses */}
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-2">
-                Áreas de interesse
-              </label>
-              <p className="text-[11px] text-slate-500 mb-2">
-                Escolha as áreas que mais fazem sentido para o momento da sua
-                carreira. Usaremos isso para montar suas recomendações.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {OPCOES_INTERESSES.map((op) => {
-                  const ativo = form.interesses.includes(op);
-                  return (
-                    <button
-                      key={op}
-                      type="button"
-                      onClick={() => toggleInteresse(op)}
-                      className={`rounded-full border px-3 py-1 text-[11px] font-medium transition ${
-                        ativo
-                          ? "border-sky-500 bg-sky-50 text-sky-700"
-                          : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
-                      }`}
-                    >
-                      {op}
-                    </button>
-                  );
-                })}
+              <button
+                type="submit"
+                disabled={loading}
+                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Entrando...
+                  </span>
+                ) : (
+                  'Entrar'
+                )}
+              </button>
+            </div>
+          </form>
+        ) : (
+          // ==================== FORMULÁRIO DE CADASTRO ====================
+          <form className="mt-8 space-y-6" onSubmit={handleCadastro}>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="nome-cadastro" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nome completo
+                </label>
+                <input
+                  id="nome-cadastro"
+                  name="nome"
+                  type="text"
+                  required
+                  className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="João Silva"
+                  value={cadastroData.nome}
+                  onChange={(e) =>
+                    setCadastroData({ ...cadastroData, nome: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label htmlFor="email-cadastro" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  id="email-cadastro"
+                  name="email"
+                  type="email"
+                  required
+                  className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="seu@email.com"
+                  value={cadastroData.email}
+                  onChange={(e) =>
+                    setCadastroData({ ...cadastroData, email: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label htmlFor="senha-cadastro" className="block text-sm font-medium text-gray-700 mb-1">
+                  Senha
+                </label>
+                <input
+                  id="senha-cadastro"
+                  name="senha"
+                  type="password"
+                  required
+                  minLength={6}
+                  className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Mínimo 6 caracteres"
+                  value={cadastroData.senha}
+                  onChange={(e) =>
+                    setCadastroData({ ...cadastroData, senha: e.target.value })
+                  }
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Use pelo menos 6 caracteres
+                </p>
               </div>
             </div>
 
-            {/* Botão entrar */}
-            <button
-              type="submit"
-              className="
-                mt-4 w-full rounded-xl bg-linear-to-r from-sky-600 to-sky-500 
-                py-2.5 text-sm font-semibold text-white shadow-md 
-                hover:from-sky-700 hover:to-sky-600 hover:shadow-lg 
-                active:translate-y-px transition
-              "
-            >
-              Entrar e montar meu painel
-            </button>
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Criando conta...
+                  </span>
+                ) : (
+                  'Criar conta'
+                )}
+              </button>
+            </div>
 
-            <p className="mt-2 text-[11px] text-slate-400">
-              Este login é apenas uma simulação local. As informações serão
-              usadas para personalizar a Home, Perfil e Recomendações na sua
-              sessão atual.
+            <p className="text-xs text-gray-500 text-center">
+              Ao criar uma conta, você concorda com nossos Termos de Uso
             </p>
           </form>
-        </div>
+        )}
 
-        {/* LADO DIREITO – INFO BONITINHA */}
-        <div className="hidden md:flex flex-col justify-between bg-linear-to-br from-sky-600 via-sky-700 to-slate-900 text-sky-50 px-7 py-8">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-sky-100/80">
-              SkillBridge
-            </p>
-            <h3 className="mt-3 text-xl font-bold">
-              Perfil vivo, recomendações inteligentes.
-            </h3>
-            <p className="mt-2 text-xs text-sky-100/80 leading-relaxed">
-              Assim que você entra, usamos seu perfil para montar um painel com
-              trilhas, cursos, vídeos e sites que combinam com seus objetivos e
-              com o tempo que você realmente tem para estudar.
-            </p>
-          </div>
-
-          <div className="mt-4 rounded-2xl bg-white/10 px-4 py-3 text-[11px] text-sky-50/90">
-            <p className="font-semibold mb-1">O que será personalizado:</p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Saudação na Home com seu nome.</li>
-              <li>Bloco de perfil com interesses e disponibilidade.</li>
-              <li>Recomendações de cursos e trilhas mais alinhadas.</li>
-            </ul>
-          </div>
+        {/* Footer */}
+        <div className="text-center text-sm text-gray-600">
+          <p>
+            Teste rápido? Use:{' '}
+            <button
+              onClick={() => {
+                setIsLogin(true);
+                setLoginData({
+                  email: 'teste.final@email.com',
+                  senha: 'senha123',
+                });
+              }}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              Conta de demonstração
+            </button>
+          </p>
         </div>
       </div>
     </div>

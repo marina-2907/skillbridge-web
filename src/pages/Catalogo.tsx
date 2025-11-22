@@ -1,26 +1,86 @@
-import { useMemo, useState } from "react";
-import { cursos } from "../services/api";
+import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { cursoService } from "../services/curso.service";
+import { inscricaoService } from "../services/inscricao.service";
 import CourseCard from "../components/CourseCard";
 import FilterBar from "../components/FilterBar";
 import { useFavoritos } from "../hooks/useFavoritos";
+import type { CursoAPI } from "../types/api.types";
 
 export function Catalogo() {
+  const { usuario, isLoggedIn } = useAuth();
   const [busca, setBusca] = useState("");
   const [nivel, setNivel] = useState("");
   const [mostrarFavoritos, setMostrarFavoritos] = useState(false);
+  const [cursos, setCursos] = useState<CursoAPI[]>([]);
+  const [cursosInscritos, setCursosInscritos] = useState<Set<number>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const { favoritos } = useFavoritos();
+
+  // Carregar cursos do backend
+  useEffect(() => {
+    async function carregarCursos() {
+      try {
+        setLoading(true);
+        setError('');
+        const dados = await cursoService.listar();
+        
+        // Filtrar apenas cursos com ID > 10000
+        const cursosFiltrados = dados.filter(curso => curso.id > 10000);
+        setCursos(cursosFiltrados);
+      } catch (err) {
+        console.error('Erro ao carregar cursos:', err);
+        setError('Erro ao carregar catálogo. Tente recarregar a página.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    carregarCursos();
+  }, []);
+
+  // Carregar cursos em que o usuário já está inscrito
+  useEffect(() => {
+    async function carregarInscricoes() {
+      if (!usuario?.id) return;
+
+      try {
+        const inscricoes = await inscricaoService.listarPorUsuario(usuario.id);
+        const idsInscritos = new Set(inscricoes.map(i => i.cursoId));
+        setCursosInscritos(idsInscritos);
+      } catch (err) {
+        console.error('Erro ao carregar inscrições:', err);
+      }
+    }
+
+    carregarInscricoes();
+  }, [usuario?.id]);
+
+  // Recarregar inscrições quando um curso for adicionado
+  const handleCursoAdicionado = async () => {
+    if (!usuario?.id) return;
+    
+    try {
+      const inscricoes = await inscricaoService.listarPorUsuario(usuario.id);
+      const idsInscritos = new Set(inscricoes.map(i => i.cursoId));
+      setCursosInscritos(idsInscritos);
+    } catch (err) {
+      console.error('Erro ao recarregar inscrições:', err);
+    }
+  };
 
   // lista filtrada por busca + nível
   const lista = useMemo(() => {
     return cursos.filter((c) => {
       const byBusca = busca
-        ? (c.titulo + c.provedor).toLowerCase().includes(busca.toLowerCase())
+        ? (c.nome + c.area + c.descricao).toLowerCase().includes(busca.toLowerCase())
         : true;
       const byNivel = nivel ? c.nivel === nivel : true;
       return byBusca && byNivel;
     });
-  }, [busca, nivel]);
+  }, [cursos, busca, nivel]);
 
   // se "mostrar favoritos" estiver ativo, filtra a lista pelos favoritos
   const exibicao = useMemo(() => {
@@ -36,6 +96,17 @@ export function Catalogo() {
   };
 
   const quantidadeTexto = mostrarFavoritos ? "favorito(s)" : "encontrado(s)";
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-slate-600">Carregando catálogo...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pb-16 px-4 md:px-6 lg:px-10 max-w-7xl mx-auto">
@@ -59,6 +130,22 @@ export function Catalogo() {
           style={{ background: "linear-gradient(90deg, #0284c7, #0ea5e9)" }}
         />
       </section>
+
+      {/* Mensagem de erro */}
+      {error && (
+        <div className="mb-6 rounded-xl bg-red-50 border border-red-200 px-4 py-3 max-w-5xl mx-auto">
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+
+      {/* Aviso para usuários não logados */}
+      {!isLoggedIn && (
+        <div className="mb-6 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 max-w-5xl mx-auto">
+          <p className="text-sm text-amber-800">
+            💡 <strong>Dica:</strong> Faça login para adicionar cursos à sua trilha e acompanhar seu progresso!
+          </p>
+        </div>
+      )}
 
       {/* ===== CARD DE FILTROS ===== */}
       <section className="mb-10">
@@ -150,7 +237,11 @@ export function Catalogo() {
                   className="opacity-0 translate-y-2 animate-fadeInUp"
                   style={{ animationDelay: `${index * 40}ms` }}
                 >
-                  <CourseCard c={c} />
+                  <CourseCard 
+                    c={c} 
+                    jaNaTrilha={cursosInscritos.has(c.id)}
+                    onAdicionadoATrilha={handleCursoAdicionado}
+                  />
                 </div>
               ))}
             </div>
