@@ -251,7 +251,7 @@ https://youtu.be/zNGS5CmAJ2w
 
 🌐 Deploy no Vercel
 >>>>>>> dd535d8 (feat: atualiza projeto skillbridge-web)
-https://skillbridge-web-indol.vercel.app
+https://skillbridge-web-git-ad17c1-marina-tamagnini-magalhaes-projects.vercel.app/
 
 
 
