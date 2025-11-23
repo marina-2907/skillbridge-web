@@ -247,9 +247,7 @@ https://youtu.be/zNGS5CmAJ2w
 
 🌐 Deploy no Vercel
 
-https://skillbridge-web-git-ad17c1-marina-tamagnini-magalhaes-projects.vercel.app/
-
-
+skillbridge-frontend-silk.vercel.app
 
 💙 Agradecimentos
 <<<<<<< HEAD
