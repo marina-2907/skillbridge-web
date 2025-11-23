@@ -231,26 +231,22 @@ Autenticação JWT
 Recomendações dinâmicas a partir de dados reais
 
 <<<<<<< HEAD
-Links Importantes
 
- Repositório no GitHub
-https://github.com/marina-2907/skillbridge-web
+Links do Projeto
+☕ API Java (Railway)
 
- Vídeo de Apresentação (YouTube)
-https://youtu.be/zNGS5CmAJ2w
-
- Deploy no Vercel
-=======
-* Links Importantes
+https://skillbridge-api-production.up.railway.app
 
 📦 Repositório no GitHub
+
 https://github.com/marina-2907/skillbridge-web
 
 ▶️ Vídeo de Apresentação (YouTube)
+
 https://youtu.be/zNGS5CmAJ2w
 
 🌐 Deploy no Vercel
->>>>>>> dd535d8 (feat: atualiza projeto skillbridge-web)
+
 https://skillbridge-web-git-ad17c1-marina-tamagnini-magalhaes-projects.vercel.app/
 
 
