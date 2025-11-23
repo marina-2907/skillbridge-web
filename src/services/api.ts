@@ -9,8 +9,11 @@ import type {
 // ========= INSTÂNCIA DA API (Java no Railway) =========
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+  baseURL: "https://skillbridge-api-production.up.railway.app/api",
+
 });
+
+
 
 // ========= MOCK LOCAL (fallback se a API cair) =========
 
