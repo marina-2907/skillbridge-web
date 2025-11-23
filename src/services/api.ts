@@ -1,7 +1,18 @@
+// src/services/api.ts
+import axios from "axios";
 import type { Curso } from "../types";
-import type { UsuarioResponseDTO as Usuario } from "../types/api.types";
+import type {
+  UsuarioResponseDTO as Usuario,
+ 
+} from "../types/api.types";
 
+// ========= INSTÂNCIA DA API (Java no Railway) =========
 
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+});
+
+// ========= MOCK LOCAL (fallback se a API cair) =========
 
 export const cursos: Curso[] = [
   {
@@ -344,8 +355,10 @@ export const usuarioDemo: Usuario = {
   email: "",
   ativo: "",
   dataCadastro: "",
-  ultimoAcesso: null
+  ultimoAcesso: null,
 };
+
+// ========= LÓGICA DE RECOMENDAÇÃO (frontend) =========
 
 export function recomendarCursos(
   user: Usuario,
@@ -367,4 +380,45 @@ export function recomendarCursos(
   };
 
   return [...base].sort((a, b) => score(b) - score(a));
+}
+
+// ========= FUNÇÕES QUE FALAM COM O JAVA =========
+
+// Buscar usuário real na API
+export async function buscarUsuario(id: number): Promise<Usuario> {
+  try {
+    const resp = await api.get<Usuario>(`/usuarios/${id}`);
+    return resp.data;
+  } catch (e) {
+    console.error("Erro ao buscar usuário na API, usando usuarioDemo.", e);
+    return usuarioDemo;
+  }
+}
+
+// Buscar cursos reais na API (e cair no mock se der ruim)
+export async function buscarCursos(): Promise<Curso[]> {
+  try {
+    const resp = await api.get<Curso[]>("/cursos");
+    return resp.data;
+  } catch (e) {
+    console.error("Erro ao buscar cursos na API, usando mock local.", e);
+    return cursos;
+  }
+}
+
+// Se você tiver endpoint de recomendação no back, usa ele;
+// se não tiver, usa a lógica do front como fallback:
+export async function buscarRecomendacoes(usuarioId: number): Promise<Curso[]> {
+  try {
+    const resp = await api.get<Curso[]>(`/recomendacoes/${usuarioId}`);
+    return resp.data;
+  } catch (e) {
+    console.error(
+      "Erro na API de recomendações, calculando no front com base local.",
+      e
+    );
+    const user = await buscarUsuario(usuarioId);
+    const base = await buscarCursos();
+    return recomendarCursos(user, base);
+  }
 }

@@ -1,93 +1,71 @@
 // src/services/usuario.service.ts
-
-import { fetchAPI } from '../config/api.config';
+import { api } from "./api";
 import type {
+  LoginDTO,
   UsuarioCreateDTO,
   UsuarioResponseDTO,
-  LoginDTO,
-} from '../types/api.types';
+} from "../types/api.types";
 
-/**
- * Serviço para gerenciar usuários
- */
 export const usuarioService = {
-  /**
-   * Criar novo usuário
-   */
-  async criar(dados: UsuarioCreateDTO): Promise<UsuarioResponseDTO> {
-    return fetchAPI<UsuarioResponseDTO>('/usuarios', {
-      method: 'POST',
-      body: JSON.stringify(dados),
-    });
+  async login(data: LoginDTO): Promise<UsuarioResponseDTO> {
+    try {
+      const resp = await api.post<UsuarioResponseDTO>(
+        "/api/usuarios/login",
+        data
+      );
+      console.log("✅ Login OK:", resp.data);
+      return resp.data;
+    } catch (err: any) {
+      console.error("❌ Erro no login:", err);
+
+      // Axios: Network Error (CORS/servidor fora do ar)
+      if (err.message === "Network Error") {
+        throw new Error(
+          "Não foi possível conectar à API. Verifique se o backend está online no Railway."
+        );
+      }
+
+      if (err.response) {
+        const msgBackend =
+          err.response.data?.mensagem ||
+          err.response.data?.error ||
+          err.response.data?.message;
+
+        throw new Error(
+          msgBackend || `Erro no login (HTTP ${err.response.status})`
+        );
+      }
+
+      throw new Error("Erro desconhecido ao fazer login.");
+    }
   },
 
-  /**
-   * Fazer login
-   */
-  async login(dados: LoginDTO): Promise<UsuarioResponseDTO> {
-    return fetchAPI<UsuarioResponseDTO>('/usuarios/login', {
-      method: 'POST',
-      body: JSON.stringify(dados),
-    });
-  },
+  async criar(data: UsuarioCreateDTO): Promise<UsuarioResponseDTO> {
+    try {
+      const resp = await api.post<UsuarioResponseDTO>("/api/usuarios", data);
+      console.log("✅ Cadastro OK:", resp.data);
+      return resp.data;
+    } catch (err: any) {
+      console.error("❌ Erro no cadastro:", err);
 
-  /**
-   * Buscar usuário por ID
-   */
-  async buscarPorId(id: number): Promise<UsuarioResponseDTO> {
-    return fetchAPI<UsuarioResponseDTO>(`/usuarios/${id}`, {
-      method: 'GET',
-    });
-  },
+      if (err.message === "Network Error") {
+        throw new Error(
+          "Não foi possível conectar à API. Verifique se o backend está online no Railway."
+        );
+      }
 
-  /**
-   * Listar todos os usuários
-   */
-  async listar(): Promise<UsuarioResponseDTO[]> {
-    return fetchAPI<UsuarioResponseDTO[]>('/usuarios', {
-      method: 'GET',
-    });
-  },
+      if (err.response) {
+        const msgBackend =
+          err.response.data?.mensagem ||
+          err.response.data?.error ||
+          err.response.data?.message;
 
-  /**
-   * Atualizar usuário
-   */
-  async atualizar(
-    id: number,
-    dados: UsuarioCreateDTO
-  ): Promise<UsuarioResponseDTO> {
-    return fetchAPI<UsuarioResponseDTO>(`/usuarios/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(dados),
-    });
-  },
+        throw new Error(
+          msgBackend || `Erro no cadastro (HTTP ${err.response.status})`
+        );
+      }
 
-  /**
-   * Deletar usuário
-   */
-  async deletar(id: number): Promise<void> {
-    return fetchAPI<void>(`/usuarios/${id}`, {
-      method: 'DELETE',
-    });
+      throw new Error("Erro desconhecido ao criar usuário.");
+    }
   },
 };
-
-/**
- * Exemplo de uso:
- * 
- * // Criar usuário
- * const novoUsuario = await usuarioService.criar({
- *   nome: "João Silva",
- *   email: "joao@email.com",
- *   senha: "senha123"
- * });
- * 
- * // Login
- * const usuario = await usuarioService.login({
- *   email: "joao@email.com",
- *   senha: "senha123"
- * });
- * 
- * // Salvar no localStorage
- * localStorage.setItem('usuario', JSON.stringify(usuario));
- */

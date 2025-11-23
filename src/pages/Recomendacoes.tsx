@@ -1,8 +1,8 @@
 // src/pages/Recomendacoes.tsx
 import { useState } from 'react';
 import { Sparkles, TrendingUp, Clock, Star } from 'lucide-react';
-import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import { api } from '../services/api'; 
 
 interface CursoRecomendado {
   id: number | undefined;
@@ -49,7 +49,7 @@ export function Recomendacoes() {
   // Carregar inscrições do usuário
   const carregarInscricoes = async () => {
     try {
-      const response = await axios.get<any>(`http://localhost:8080/api/inscricoes/usuario/${usuarioId}`);
+      const response = await api.get<any>(`/api/inscricoes/usuario/${usuarioId}`);
       const inscricoes: any[] = response.data || [];
       const cursosIds = new Set<number>(
         inscricoes
@@ -69,8 +69,8 @@ export function Recomendacoes() {
       
       console.log('🔍 Buscando recomendações para usuário:', usuarioId);
       
-      const response = await axios.post(
-        `http://localhost:8080/api/recomendacoes/gerar/${usuarioId}?topN=10`
+      const response = await api.post(
+        `/api/recomendacoes/gerar/${usuarioId}?topN=10`
       );
       
       console.log('✅ Resposta da API:', response.data);
@@ -83,7 +83,10 @@ export function Recomendacoes() {
     } catch (err: any) {
       console.error('❌ Erro ao buscar recomendações:', err);
       console.error('📝 Detalhes do erro:', err.response?.data);
-      setError(err.response?.data?.erro || 'Erro ao conectar com a API. Verifique se o backend Java está rodando na porta 8080.');
+      setError(
+        err.response?.data?.erro ||
+        'Erro ao conectar com a API. Verifique se o backend Java está rodando (em dev) ou se a URL da API está correta.'
+      );
     } finally {
       setLoading(false);
     }
@@ -96,7 +99,7 @@ export function Recomendacoes() {
       console.log('📤 Adicionando curso à trilha:', cursoId);
       
       // Criar inscrição
-      await axios.post('http://localhost:8080/api/inscricoes', {
+      await api.post('/api/inscricoes', {
         usuarioId: usuarioId,
         cursoId: cursoId
       });
@@ -135,9 +138,9 @@ export function Recomendacoes() {
           <p className="text-red-600 mb-4 text-sm">{error}</p>
           <div className="text-left bg-gray-50 p-4 rounded mb-4">
             <p className="text-xs font-mono text-gray-700">
-              Certifique-se que:<br/>
+              Em desenvolvimento, certifique-se que:<br/>
               1. Backend Java está rodando (porta 8080)<br/>
-              2. API Flask está rodando (porta 5000)<br/>
+              2. API Flask está rodando (porta 5000, se estiver usando)<br/>
               3. Banco Oracle configurado
             </p>
           </div>
@@ -202,7 +205,7 @@ export function Recomendacoes() {
               const scoreRelevancia = rec.scoreRelevancia || rec.score_relevancia || 0;
               const rank = rec.rank || (index + 1);
 
-              // DEBUG - ADICIONA ESSAS LINHAS:
+              // DEBUG
               console.log('🔍 DEBUG CURSO:', {
                 rec_completo: rec,
                 curso: rec.curso,

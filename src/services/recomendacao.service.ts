@@ -1,7 +1,7 @@
 // src/services/recomendacao.service.ts
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'https://skillbridge-api-production.up.railway.app';
 
 export interface CursoRecomendado {
   idCurso: number;

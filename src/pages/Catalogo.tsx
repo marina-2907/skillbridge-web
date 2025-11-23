@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { cursoService } from "../services/curso.service";
 import { inscricaoService } from "../services/inscricao.service";
 import CourseCard from "../components/CourseCard";
 import FilterBar from "../components/FilterBar";
 import { useFavoritos } from "../hooks/useFavoritos";
 import type { CursoAPI } from "../types/api.types";
+import { api } from "../services/api"; 
 
 export function Catalogo() {
   const { usuario, isLoggedIn } = useAuth();
@@ -15,24 +15,30 @@ export function Catalogo() {
   const [cursos, setCursos] = useState<CursoAPI[]>([]);
   const [cursosInscritos, setCursosInscritos] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const { favoritos } = useFavoritos();
 
-  // Carregar cursos do backend
+  // Carregar cursos do backend (Java no Railway)
   useEffect(() => {
     async function carregarCursos() {
       try {
         setLoading(true);
-        setError('');
-        const dados = await cursoService.listar();
-        
-        // Filtrar apenas cursos com ID > 10000
-        const cursosFiltrados = dados.filter(curso => curso.id > 10000);
+        setError("");
+
+        const resp = await api.get<CursoAPI[]>("/cursos");
+        let dados = resp.data;
+
+        // 👇 Se ainda quiser filtrar por ID > 10000, mantém:
+        const cursosFiltrados = dados.filter((curso) => curso.id > 10000);
         setCursos(cursosFiltrados);
+
+        // 👉 Se quiser todos os cursos, sem esse filtro, use:
+        // setCursos(dados);
+
       } catch (err) {
-        console.error('Erro ao carregar cursos:', err);
-        setError('Erro ao carregar catálogo. Tente recarregar a página.');
+        console.error("Erro ao carregar cursos:", err);
+        setError("Erro ao carregar catálogo. Tente recarregar a página.");
       } finally {
         setLoading(false);
       }
@@ -48,10 +54,10 @@ export function Catalogo() {
 
       try {
         const inscricoes = await inscricaoService.listarPorUsuario(usuario.id);
-        const idsInscritos = new Set(inscricoes.map(i => i.cursoId));
+        const idsInscritos = new Set(inscricoes.map((i) => i.cursoId));
         setCursosInscritos(idsInscritos);
       } catch (err) {
-        console.error('Erro ao carregar inscrições:', err);
+        console.error("Erro ao carregar inscrições:", err);
       }
     }
 
@@ -61,13 +67,13 @@ export function Catalogo() {
   // Recarregar inscrições quando um curso for adicionado
   const handleCursoAdicionado = async () => {
     if (!usuario?.id) return;
-    
+
     try {
       const inscricoes = await inscricaoService.listarPorUsuario(usuario.id);
-      const idsInscritos = new Set(inscricoes.map(i => i.cursoId));
+      const idsInscritos = new Set(inscricoes.map((i) => i.cursoId));
       setCursosInscritos(idsInscritos);
     } catch (err) {
-      console.error('Erro ao recarregar inscrições:', err);
+      console.error("Erro ao recarregar inscrições:", err);
     }
   };
 
@@ -180,7 +186,9 @@ export function Catalogo() {
                   }
                 `}
               >
-                <span>{mostrarFavoritos ? "Mostrar todos os cursos" : "Mostrar apenas favoritos"}</span>
+                <span>
+                  {mostrarFavoritos ? "Mostrar todos os cursos" : "Mostrar apenas favoritos"}
+                </span>
                 <span
                   className={`h-3 w-3 rounded-full border ${
                     favoritos.length > 0
@@ -237,8 +245,8 @@ export function Catalogo() {
                   className="opacity-0 translate-y-2 animate-fadeInUp"
                   style={{ animationDelay: `${index * 40}ms` }}
                 >
-                  <CourseCard 
-                    c={c} 
+                  <CourseCard
+                    c={c}
                     jaNaTrilha={cursosInscritos.has(c.id)}
                     onAdicionadoATrilha={handleCursoAdicionado}
                   />
