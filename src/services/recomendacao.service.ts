@@ -1,8 +1,6 @@
 // src/services/recomendacao.service.ts
-import axios from 'axios';
-
-const API_URL = 'https://skillbridge-api-production.up.railway.app';
-
+import { fetchAPI } from '../config/api.config';
+ 
 export interface CursoRecomendado {
   idCurso: number;
   nome: string;
@@ -14,7 +12,7 @@ export interface CursoRecomendado {
   taxaConclusaoMedia: number;
   popularidadeScore: number;
 }
-
+ 
 export interface RecomendacaoItem {
   rank: number;
   curso: CursoRecomendado;
@@ -24,61 +22,67 @@ export interface RecomendacaoItem {
   modeloIa: string;
   versaoModelo: string;
 }
-
+ 
 export interface RecomendacaoResponse {
   message?: string;
   total: number;
   recomendacoes: RecomendacaoItem[];
 }
-
+ 
 export const recomendacaoService = {
   /**
    * Gerar novas recomendações via IA
    */
   gerarRecomendacoes: async (usuarioId: number, topN: number = 10): Promise<RecomendacaoResponse> => {
     try {
-      const response = await axios.post(
-        `${API_URL}/recomendacoes/gerar/${usuarioId}?topN=${topN}`
+      return await fetchAPI<RecomendacaoResponse>(
+        `/api/recomendacoes/gerar/${usuarioId}?topN=${topN}`,
+        { method: 'POST' }
       );
-      return response.data;
     } catch (error) {
       console.error('Erro ao gerar recomendações:', error);
       throw error;
     }
   },
-
+ 
   /**
    * Buscar recomendações já geradas para um usuário
    */
   buscarRecomendacoes: async (usuarioId: number, limit: number = 10): Promise<RecomendacaoResponse> => {
     try {
-      const response = await axios.get(
-        `${API_URL}/recomendacoes/usuario/${usuarioId}?limit=${limit}`
+      return await fetchAPI<RecomendacaoResponse>(
+        `/api/recomendacoes/usuario/${usuarioId}?limit=${limit}`,
+        { method: 'GET' }
       );
-      return response.data;
     } catch (error) {
       console.error('Erro ao buscar recomendações:', error);
       throw error;
     }
   },
-
+ 
   /**
    * Marcar recomendação como visualizada
    */
   marcarVisualizada: async (recomendacaoId: number): Promise<void> => {
     try {
-      await axios.put(`${API_URL}/recomendacoes/${recomendacaoId}/visualizar`);
+      await fetchAPI<void>(
+        `/api/recomendacoes/${recomendacaoId}/visualizar`,
+        { method: 'PUT' }
+      );
     } catch (error) {
       console.error('Erro ao marcar como visualizada:', error);
     }
   },
-
+ 
   /**
    * Marcar que usuário se inscreveu no curso recomendado
    */
   marcarInscricao: async (recomendacaoId: number): Promise<void> => {
     try {
-      await axios.put(`${API_URL}/recomendacoes/${recomendacaoId}/inscreveu`);
+      await fetchAPI<void>(
+        `/api/recomendacoes/${recomendacaoId}/inscreveu`,
+        { method: 'PUT' }
+      );
     } catch (error) {
       console.error('Erro ao marcar inscrição:', error);
     }
