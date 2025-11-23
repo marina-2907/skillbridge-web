@@ -6,11 +6,11 @@ Este projeto foi desenvolvido como parte das atividades acadêmicas da **FIAP**,
 
 ---
 
-<<<<<<< HEAD
+
 ##  Objetivo do Projeto
 =======
 ## 🎯 Objetivo do Projeto
->>>>>>> dd535d8 (feat: atualiza projeto skillbridge-web)
+
 
 A SkillBridge nasce para resolver um problema comum:  
 > *“Existe conteúdo demais, pouca direção e nenhuma trilha clara de aprendizado.”*
