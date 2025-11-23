@@ -9,7 +9,7 @@ import { EditarPerfil } from "./pages/EditarPerfil";
 import { Recomendacoes } from "./pages/Recomendacoes"; // AGORA É A PÁGINA COM IA
 import { Trilha } from "./pages/Trilha";
 import { Integrantes } from "./pages/Integrantes";
-import { Faq } from "./pages/Faq";
+import { Faq } from "./pages/Faq03";
 import { Contato } from "./pages/Contato";
 import { FavoritosProvider } from "./hooks/useFavoritos";
 import { TrilhaProvider } from "./hooks/useTrilha";
@@ -33,7 +33,7 @@ export default function App() {
                   <Route path="/editar-perfil" element={<EditarPerfil />} />
                   <Route path="/trilha" element={<Trilha />} />
                   <Route path="/integrantes" element={<Integrantes />} />
-                  <Route path="/faq" element={<Faq />} />
+                  <Route path="/Faq" element={<Faq />} />
                   <Route path="/contato" element={<Contato />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
