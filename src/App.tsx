@@ -9,7 +9,7 @@ import { EditarPerfil } from "./pages/EditarPerfil";
 import { Recomendacoes } from "./pages/Recomendacoes"; // AGORA É A PÁGINA COM IA
 import { Trilha } from "./pages/Trilha";
 import { Integrantes } from "./pages/Integrantes";
-import { Faq } from "./pages/Faq03";
+import { Faq } from "./pages/Faq";
 import { Contato } from "./pages/Contato";
 import { FavoritosProvider } from "./hooks/useFavoritos";
 import { TrilhaProvider } from "./hooks/useTrilha";
