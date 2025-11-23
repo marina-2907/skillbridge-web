@@ -1,4 +1,7 @@
-import type { Curso, Usuario } from "../types";
+import type { Curso } from "../types";
+import type { UsuarioResponseDTO as Usuario } from "../types/api.types";
+
+
 
 export const cursos: Curso[] = [
   {
@@ -338,7 +341,10 @@ export const usuarioDemo: Usuario = {
   competencias: ["html", "css", "figma", "python-basico"],
   interesses: ["dados", "ia", "ux"],
   disponibilidadeSemanal: 6,
-  fotoUrl: undefined
+  email: "",
+  ativo: "",
+  dataCadastro: "",
+  ultimoAcesso: null
 };
 
 export function recomendarCursos(
@@ -347,7 +353,7 @@ export function recomendarCursos(
 ): Curso[] {
   const interesseSet = new Set([
     ...user.interesses,
-    ...user.competencias.map((c) => c.split("-")[0]),
+    ...user.competencias.map((c: string) => c.split("-")[0]),
   ]);
 
   const score = (c: Curso) => {

@@ -1,5 +1,6 @@
 // src/contexts/AuthContext.tsx
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import type { ReactNode } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import type { UsuarioResponseDTO } from '../types/api.types';
 
 interface AuthContextType {

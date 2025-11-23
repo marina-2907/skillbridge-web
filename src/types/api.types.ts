@@ -14,6 +14,9 @@ export interface UsuarioCreateDTO {
 }
 
 export interface UsuarioResponseDTO {
+  disponibilidadeSemanal: number;
+  competencias: any;
+  interesses: any;
   id: number;
   nome: string;
   email: string;
@@ -81,6 +84,8 @@ export interface InscricaoAPI {
     nome: string;
   };
   curso: {
+    nivel: string;
+    cargaHoraria: number;
     id: number;
     nome: string;
   };

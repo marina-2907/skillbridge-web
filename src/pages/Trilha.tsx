@@ -136,7 +136,6 @@ export function Trilha() {
             if (!curso) return null;
 
             const cargaHoraria = inscricao.tempoGastoHoras || 0;
-            const semanas = Math.max(1, Math.ceil(cargaHoraria / 5));
             const dataInscricao = new Date(inscricao.dataInscricao).toLocaleDateString('pt-BR');
 
             return (
