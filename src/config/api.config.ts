@@ -1,14 +1,5 @@
 // src/config/api.config.ts
 
-/**
- * Configuração da API Backend
- * 
- * IMPORTANTE: Antes de usar, configure a URL correta:
- * - Desenvolvimento local: https://skillbridge-api-production.up.railway.app
- * - Produção: URL do deploy (Render, Railway, etc)
- */
-
-// URL base da API - CONFIGURE AQUI!
 export const API_BASE_URL = 'https://skillbridge-api-production.up.railway.app';
 
 // Timeout padrão para requisições (em ms)
